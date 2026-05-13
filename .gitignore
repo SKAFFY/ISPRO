@@ -1,0 +1,8 @@
+.gopath/
+bin/
+coverage.out
+coverage.html
+*.swp
+*.swo
+*~
+.DS_Store
