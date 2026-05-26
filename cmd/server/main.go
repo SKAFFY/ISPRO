@@ -13,13 +13,13 @@ import (
 )
 
 func main() {
-	vlEndpoint := os.Getenv("VICTORIALOGS_ENDPOINT")
+	lokiEndpoint := os.Getenv("LOKI_ENDPOINT")
 	serviceName := os.Getenv("SERVICE_NAME")
 	if serviceName == "" {
 		serviceName = "ispro-app"
 	}
 
-	logger := slog.New(logs.NewVictoriaLogsHandler(vlEndpoint, serviceName, slog.LevelInfo))
+	logger := slog.New(logs.NewLokiHandler(lokiEndpoint, serviceName, slog.LevelInfo))
 	slog.SetDefault(logger)
 
 	ctx := context.Background()

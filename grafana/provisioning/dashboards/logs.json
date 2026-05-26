@@ -1,32 +1,51 @@
 {
-  "title": "ISPRO App Logs",
-  "uid": "ispro-app-logs",
-  "schemaVersion": 39,
-  "version": 1,
-  "timezone": "browser",
   "panels": [
     {
-      "title": "Application Logs",
-      "type": "logs",
-      "gridPos": { "h": 20, "w": 24, "x": 0, "y": 0 },
-      "datasource": { "type": "grafana-loki-datasource", "uid": "victorialogs" },
+      "datasource": {
+        "type": "loki",
+        "uid": "Loki"
+      },
+      "fieldConfig": {
+        "defaults": {}
+      },
+      "gridPos": {
+        "h": 24,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
       "targets": [
         {
           "expr": "{service=\"ispro-app\"}",
           "refId": "A"
         }
       ],
-      "options": {
-        "showLabels": true,
-        "showTime": true,
-        "sortOrder": "Descending",
-        "wrapLogMessage": true,
-        "prettifyLogMessage": false,
-        "enableLogDetails": true
-      },
-      "fieldConfig": {
-        "defaults": {}
-      }
+      "title": "Application Logs",
+      "type": "logs"
     }
-  ]
+  ],
+  "refresh": "5s",
+  "schemaVersion": 39,
+  "tags": [
+    "ispro-app",
+    "logs"
+  ],
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "ISPRO App Logs",
+  "uid": "b60f3f66-cbe3-4bc4-b07e-d4d4482763d1"
 }

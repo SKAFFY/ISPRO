@@ -224,17 +224,17 @@ go_goroutines
 
 ### Описание
 
-Добавление структурированного журналирования (логов) в сервис с использованием встроенного пакета `log/slog` (Go 1.21+) и сбор логов в VictoriaLogs с визуализацией в Grafana.
+Добавление структурированного журналирования (логов) в сервис с использованием встроенного пакета `log/slog` (Go 1.21+) и сбор логов в Loki с визуализацией в Grafana.
 
 ### Технологии
 
 - Go + `log/slog` (структурированное логирование в JSON)
-- VictoriaLogs (хранение логов)
+- Loki (хранение логов)
 - Grafana (визуализация)
 
 ### Доступ к сервисам
 
-- **VictoriaLogs**: http://localhost:9428
+- **Loki**: http://localhost:3100
 - **Grafana Logs Dashboard**: http://localhost:3000 (admin/admin)
 
 ### Примеры LogQL запросов
@@ -244,25 +244,19 @@ go_goroutines
 {service="ispro-app"}
 
 # Только ошибки
-{service="ispro-app"} |= "level" = "error"
+{service="ispro-app"} |= `"level":"error"`
 
 # Только предупреждения
-{service="ispro-app"} |= "level" = "warn"
+{service="ispro-app"} |= `"level":"warn"`
 
 # Поиск по конкретному ID записи
-{service="ispro-app"} |= `"id": 1`
+{service="ispro-app"} |= `"id":1`
 
 # Поиск по title
 {service="ispro-app"} |= "Title"
 
-# Логи за последние 15 минут
-{service="ispro-app"} | time_filter(15m)
-
-# Подсчёт ошибок по минутам
-sum by (level) (rate({service="ispro-app"} |= "error" [1m]))
-
-# Топ-10 самых частых сообщений
-topk(10, sum by (msg) (count_over_time({service="ispro-app"}[1h])))
+# Подсчёт логов по уровням
+sum by (level) (count_over_time({service="ispro-app"}[5m]))
 ```
 
 ### Структура логов
