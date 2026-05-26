@@ -1,0 +1,16 @@
+version: v0.2
+container:
+  dir: internal/di
+factories:
+  returnError: true
+errorHandling:
+  new:
+    pkg: 'fmt'
+    func: 'Errorf'
+  join:
+    pkg: 'errors'
+    func: 'Join'
+  wrap:
+    pkg: 'fmt'
+    func: 'Errorf'
+    verb: '%w'
