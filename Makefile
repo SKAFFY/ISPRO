@@ -1,4 +1,4 @@
-.PHONY: start test bench clean build-server build-regexp lint coverage migrate-up migrate-down docker-up docker-down docker-build generate-api di-generate swagger
+.PHONY: start test bench clean build-server build-regexp lint coverage migrate-up migrate-down docker-up docker-down docker-build generate-api di-generate swagger ci-lint ci-test ci-build ci
 
 BINARY_NAME=ispro-app
 POSTGRES_DSN=postgres://ispro:ispro@localhost:5432/ispro?sslmode=disable
@@ -20,6 +20,20 @@ test:
 
 bench:
 	go test -bench=. ./...
+
+lint:
+	golangci-lint run
+
+ci-lint:
+	act -j lint -W .github/workflows
+
+ci-test:
+	act -j test -W .github/workflows
+
+ci-build:
+	act -j build -W .github/workflows
+
+ci: ci-lint ci-test ci-build
 
 migrate-up:
 	goose -dir=internal/migrations postgres $(POSTGRES_DSN) up

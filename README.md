@@ -324,3 +324,43 @@ sum by (level) (count_over_time({service="ispro-app"}[5m]))
 - Сравнение трассировок
 
 В Grafana через datasource `Jaeger` можно просматривать трассировки из Explore.
+
+---
+
+## Lab6: CI/CD
+
+### Описание
+
+Настройка непрерывной интеграции (Continuous Integration) с помощью GitHub Actions. При пуше в ветку `lab6` автоматически выполняются: линтинг кода, тестирование, сборка бинарного файла и сборка Docker образа с публикацией в GitHub Container Registry.
+
+### Технологии
+
+- GitHub Actions
+- golangci-lint (статический анализ кода)
+- Go test (юнит-тесты с race detector и coverage)
+- Docker + GitHub Container Registry (ghcr.io)
+
+### Этапы пайплайна
+
+| Этап | Описание |
+|------|----------|
+| `lint` | Статический анализ кода через golangci-lint |
+| `test` | Запуск тестов с race detector и подсчётом coverage |
+| `build` | Компиляция бинарного файла |
+| `docker` | Сборка Docker образа и публикация в ghcr.io (зависит от lint, test, build) |
+
+### Триггер
+
+Workflow запускается автоматически при пуше в ветку `lab6`.
+
+### Docker образ
+
+Образ публикуется в GitHub Container Registry по адресу:
+```
+ghcr.io/skaffy/ispro-app:lab6
+ghcr.io/skaffy/ispro-app:<commit-sha>
+```
+
+### Сервисы
+
+На этапе тестирования поднимается PostgreSQL 16 в качестве сервиса для прогона миграций перед тестами.

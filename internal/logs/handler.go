@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"sync"
 	"time"
 )
 
@@ -28,7 +27,6 @@ type lokiPushRequest struct {
 }
 
 type LokiHandler struct {
-	mu       sync.Mutex
 	client   *http.Client
 	endpoint string
 	service  string
