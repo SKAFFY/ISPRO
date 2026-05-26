@@ -13,6 +13,21 @@
 
 ---
 
+## Общие команды
+
+| Команда | Описание |
+|---------|----------|
+| `make docker-up` | Запуск PostgreSQL, VictoriaMetrics, Grafana |
+| `make docker-down` | Остановка всех Docker сервисов |
+| `make migrate-up` | Применение миграций |
+| `make migrate-down` | Откат миграций |
+| `make start` | Сборка и запуск сервера |
+| `make generate-api` | Генерация REST API из OpenAPI |
+| `make di-generate` | Генерация DI контейнера |
+| `make swagger` | Swagger UI на http://localhost:8081 |
+
+---
+
 ## Lab1: Регулярные выражения
 
 ### Описание
@@ -44,19 +59,19 @@
 ### Запуск
 
 ```bash
-make run
+make run-regexp
 ```
 
 ### Тесты
 
 ```bash
-make test
+go test ./...
 ```
 
 ### Бенчмарки
 
 ```bash
-make bench
+go test -bench=. ./...
 ```
 
 ---
@@ -73,19 +88,6 @@ REST API сервис для mindmap-приложения с использов�
 - OpenAPI 2.0 (Swagger)
 - go-openapi (генерация кода)
 - PostgreSQL
-
-### Запуск
-
-```bash
-# Запуск БД
-make docker-up
-
-# Применение миграций
-make migrate-up
-
-# Запуск сервера
-make run
-```
 
 ### API Endpoints
 
@@ -135,14 +137,6 @@ curl -X POST http://localhost:8080/links \
 # {"id":1,"source_id":1,"target_id":2}
 ```
 
-### Генерация кода из OpenAPI
-
-```bash
-make generate
-```
-
-Код генерируется с помощью `swagger generate server` по спецификации `api/openapi.yaml`.
-
 ### Структура проекта
 
 ```
@@ -186,19 +180,6 @@ internal/
 | `entries_deleted_total` | Counter | Всего удалено записей |
 | `links_created_total` | Counter | Всего создано связей |
 | `links_deleted_total` | Counter | Всего удалено связей |
-
-### Запуск
-
-```bash
-# Запуск всех сервисов (PostgreSQL, VictoriaMetrics, Grafana, App)
-make docker-up
-
-# Применение миграций
-make migrate-up
-
-# Сборка и запуск приложения
-make start
-```
 
 ### Доступ к сервисам
 

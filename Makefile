@@ -15,6 +15,12 @@ build-regexp:
 run-regexp: build-regexp
 	./bin/regexp
 
+test:
+	go test ./...
+
+bench:
+	go test -bench=. ./...
+
 migrate-up:
 	goose -dir=internal/migrations postgres $(POSTGRES_DSN) up
 
