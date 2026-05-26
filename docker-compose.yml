@@ -32,6 +32,8 @@ services:
       - DSN=postgres://ispro:ispro@postgres:5432/ispro?sslmode=disable
       - LOKI_ENDPOINT=http://loki:3100
       - SERVICE_NAME=ispro-app
+      - OTEL_EXPORTER_OTLP_ENDPOINT=jaeger:4318
+      - OTEL_SERVICE_NAME=ispro-app
     networks:
       - ispro-network
 
@@ -82,6 +84,7 @@ services:
     depends_on:
       - victoriametrics
       - loki
+      - jaeger
     networks:
       - ispro-network
 
@@ -96,6 +99,19 @@ services:
     volumes:
       - ./loki:/etc/loki:ro
       - loki_data:/loki
+    networks:
+      - ispro-network
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: jaeger
+    restart: unless-stopped
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+      - "4318:4318"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
     networks:
       - ispro-network
 

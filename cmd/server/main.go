@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log/slog"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/mkheyfets/ispro-app/internal/di"
 	"github.com/mkheyfets/ispro-app/internal/logs"
+	"github.com/mkheyfets/ispro-app/internal/tracing"
 )
 
 func main() {
@@ -23,6 +25,13 @@ func main() {
 	slog.SetDefault(logger)
 
 	ctx := context.Background()
+
+	tp, err := tracing.InitTracerProvider(ctx, serviceName)
+	if err != nil {
+		slog.Error("failed to init tracer provider", "error", err)
+		os.Exit(1)
+	}
+	defer tracing.ShutdownTracerProvider(ctx, tp)
 
 	dsn := os.Getenv("DSN")
 	if dsn == "" {
@@ -49,7 +58,7 @@ func main() {
 
 	go func() {
 		slog.Info("starting server", "host", server.Host, "port", server.Port)
-		if err := server.Serve(); err != nil {
+		if err := server.Serve(); err != nil && err != http.ErrServerClosed {
 			slog.Error("failed to start server", "error", err)
 			os.Exit(1)
 		}

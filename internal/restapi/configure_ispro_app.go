@@ -10,6 +10,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
 	"github.com/mkheyfets/ispro-app/internal/metrics"
 	"github.com/mkheyfets/ispro-app/internal/restapi/operations"
@@ -122,7 +123,11 @@ func configureTLS(tlsConfig *tls.Config) {
 // scheme value will be set accordingly: "http", "https" or "unix"
 func configureServer(server *http.Server, scheme, addr string) {
 	mux := http.NewServeMux()
-	wrapped := metrics.NewMiddleware()(server.Handler)
+	wrapped := metrics.NewMiddleware()(otelhttp.NewHandler(
+		server.Handler,
+		"server",
+		otelhttp.WithMessageEvents(otelhttp.ReadEvents, otelhttp.WriteEvents),
+	))
 	mux.Handle("/metrics", promhttp.Handler())
 	mux.Handle("/", wrapped)
 	server.Handler = mux
@@ -139,5 +144,5 @@ func setupMiddlewares(handler http.Handler) http.Handler {
 // The middleware configuration happens before anything, this middleware also applies to serving the swagger.json document.
 // So this is a good place to plug in a panic handling middleware, logging and metrics.
 func setupGlobalMiddleware(handler http.Handler) http.Handler {
-	return metrics.NewMiddleware()(handler)
+	return handler
 }
