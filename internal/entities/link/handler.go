@@ -1,7 +1,7 @@
 package link
 
 import (
-	"log"
+	"log/slog"
 
 	"github.com/go-openapi/runtime/middleware"
 
@@ -37,9 +37,10 @@ func NewHandler(
 func (h *Handler) ListLinks(params links.ListLinksParams) middleware.Responder {
 	result, err := h.listLinks.Handle(params.HTTPRequest.Context())
 	if err != nil {
-		log.Printf("error listing links: %v", err)
+		slog.Error("error listing links", "error", err)
 		return links.NewListLinksOK()
 	}
+	slog.Info("links listed", "count", len(result))
 	return links.NewListLinksOK().WithPayload(toModelList(result))
 }
 
@@ -50,9 +51,10 @@ func (h *Handler) CreateLink(params links.CreateLinkParams) middleware.Responder
 	}
 	result, err := h.createLink.Handle(params.HTTPRequest.Context(), cmd)
 	if err != nil {
-		log.Printf("error creating link: %v", err)
+		slog.Warn("error creating link", "error", err, "source_id", cmd.SourceID, "target_id", cmd.TargetID)
 		return links.NewCreateLinkCreated()
 	}
+	slog.Info("link created", "id", result.ID, "source_id", result.SourceID, "target_id", result.TargetID)
 	return links.NewCreateLinkCreated().WithPayload(toModel(result))
 }
 
@@ -60,8 +62,10 @@ func (h *Handler) GetLink(params links.GetLinkParams) middleware.Responder {
 	query := GetLinkQuery{ID: params.ID}
 	result, err := h.getLink.Handle(params.HTTPRequest.Context(), query)
 	if err != nil {
+		slog.Warn("link not found", "id", params.ID)
 		return links.NewGetLinkNotFound()
 	}
+	slog.Info("link retrieved", "id", result.ID)
 	return links.NewGetLinkOK().WithPayload(toModel(result))
 }
 
@@ -73,8 +77,10 @@ func (h *Handler) UpdateLink(params links.UpdateLinkParams) middleware.Responder
 	}
 	result, err := h.updateLink.Handle(params.HTTPRequest.Context(), cmd)
 	if err != nil {
+		slog.Warn("error updating link", "error", err, "id", cmd.ID)
 		return links.NewUpdateLinkNotFound()
 	}
+	slog.Info("link updated", "id", result.ID)
 	return links.NewUpdateLinkOK().WithPayload(toModel(result))
 }
 
@@ -82,8 +88,10 @@ func (h *Handler) DeleteLink(params links.DeleteLinkParams) middleware.Responder
 	cmd := DeleteLinkCommand{ID: params.ID}
 	err := h.deleteLink.Handle(params.HTTPRequest.Context(), cmd)
 	if err != nil {
+		slog.Warn("error deleting link", "error", err, "id", cmd.ID)
 		return links.NewDeleteLinkNotFound()
 	}
+	slog.Info("link deleted", "id", cmd.ID)
 	return links.NewDeleteLinkNoContent()
 }
 

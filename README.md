@@ -217,3 +217,69 @@ go_goroutines
 - HTTP Latency (p95, p99)
 - Product Metrics (stat панели)
 - Product Metrics (time series)
+
+---
+
+## Lab4: Журналирование
+
+### Описание
+
+Добавление структурированного журналирования (логов) в сервис с использованием встроенного пакета `log/slog` (Go 1.21+) и сбор логов в VictoriaLogs с визуализацией в Grafana.
+
+### Технологии
+
+- Go + `log/slog` (структурированное логирование в JSON)
+- VictoriaLogs (хранение логов)
+- Grafana (визуализация)
+
+### Доступ к сервисам
+
+- **VictoriaLogs**: http://localhost:9428
+- **Grafana Logs Dashboard**: http://localhost:3000 (admin/admin)
+
+### Примеры LogQL запросов
+
+```logql
+# Все логи приложения
+{service="ispro-app"}
+
+# Только ошибки
+{service="ispro-app"} |= "level" = "error"
+
+# Только предупреждения
+{service="ispro-app"} |= "level" = "warn"
+
+# Поиск по конкретному ID записи
+{service="ispro-app"} |= `"id": 1`
+
+# Поиск по title
+{service="ispro-app"} |= "Title"
+
+# Логи за последние 15 минут
+{service="ispro-app"} | time_filter(15m)
+
+# Подсчёт ошибок по минутам
+sum by (level) (rate({service="ispro-app"} |= "error" [1m]))
+
+# Топ-10 самых частых сообщений
+topk(10, sum by (msg) (count_over_time({service="ispro-app"}[1h])))
+```
+
+### Структура логов
+
+Каждое сообщение — JSON строка с полями:
+
+| Поле | Описание |
+|------|----------|
+| `time` | Время события (RFC3339Nano) |
+| `level` | Уровень логирования (info, warn, error) |
+| `service` | Имя сервиса (ispro-app) |
+| `msg` | Текстовое сообщение |
+| `id` | ID сущности (если применимо) |
+| `title` | Заголовок записи (если применимо) |
+| `error` | Детали ошибки (если есть) |
+
+### Дашборд
+
+В Grafana автоматически подключается дашборд `ISPRO App Logs` с панелью:
+- Application Logs — все логи приложения с возможностью фильтрации по уровню, поиску по тексту и времени

@@ -1,7 +1,7 @@
 package entry
 
 import (
-	"log"
+	"log/slog"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
@@ -38,9 +38,10 @@ func NewHandler(
 func (h *Handler) ListEntries(params entries.ListEntriesParams) middleware.Responder {
 	result, err := h.listEntries.Handle(params.HTTPRequest.Context())
 	if err != nil {
-		log.Printf("error listing entries: %v", err)
+		slog.Error("error listing entries", "error", err)
 		return entries.NewListEntriesOK()
 	}
+	slog.Info("entries listed", "count", len(result))
 	return entries.NewListEntriesOK().WithPayload(toModelList(result))
 }
 
@@ -51,9 +52,10 @@ func (h *Handler) CreateEntry(params entries.CreateEntryParams) middleware.Respo
 	}
 	result, err := h.createEntry.Handle(params.HTTPRequest.Context(), cmd)
 	if err != nil {
-		log.Printf("error creating entry: %v", err)
+		slog.Warn("error creating entry", "error", err, "title", cmd.Title)
 		return entries.NewCreateEntryCreated()
 	}
+	slog.Info("entry created", "id", result.ID, "title", result.Title)
 	return entries.NewCreateEntryCreated().WithPayload(toModel(result))
 }
 
@@ -61,8 +63,10 @@ func (h *Handler) GetEntry(params entries.GetEntryParams) middleware.Responder {
 	query := GetEntryQuery{ID: params.ID}
 	result, err := h.getEntry.Handle(params.HTTPRequest.Context(), query)
 	if err != nil {
+		slog.Warn("entry not found", "id", params.ID)
 		return entries.NewGetEntryNotFound()
 	}
+	slog.Info("entry retrieved", "id", result.ID)
 	return entries.NewGetEntryOK().WithPayload(toModel(result))
 }
 
@@ -74,8 +78,10 @@ func (h *Handler) UpdateEntry(params entries.UpdateEntryParams) middleware.Respo
 	}
 	result, err := h.updateEntry.Handle(params.HTTPRequest.Context(), cmd)
 	if err != nil {
+		slog.Warn("error updating entry", "error", err, "id", cmd.ID)
 		return entries.NewUpdateEntryNotFound()
 	}
+	slog.Info("entry updated", "id", result.ID)
 	return entries.NewUpdateEntryOK().WithPayload(toModel(result))
 }
 
@@ -83,8 +89,10 @@ func (h *Handler) DeleteEntry(params entries.DeleteEntryParams) middleware.Respo
 	cmd := DeleteEntryCommand{ID: params.ID}
 	err := h.deleteEntry.Handle(params.HTTPRequest.Context(), cmd)
 	if err != nil {
+		slog.Warn("error deleting entry", "error", err, "id", cmd.ID)
 		return entries.NewDeleteEntryNotFound()
 	}
+	slog.Info("entry deleted", "id", cmd.ID)
 	return entries.NewDeleteEntryNoContent()
 }
 

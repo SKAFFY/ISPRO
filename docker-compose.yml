@@ -30,6 +30,8 @@ services:
         condition: service_healthy
     environment:
       - DSN=postgres://ispro:ispro@postgres:5432/ispro?sslmode=disable
+      - VICTORIALOGS_ENDPOINT=http://victorialogs:9428
+      - SERVICE_NAME=ispro-app
     networks:
       - ispro-network
 
@@ -79,6 +81,22 @@ services:
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
     depends_on:
       - victoriametrics
+      - victorialogs
+    networks:
+      - ispro-network
+
+  victorialogs:
+    image: victoriametrics/victorialogs:latest
+    container_name: victorialogs
+    restart: unless-stopped
+    ports:
+      - "9428:9428"
+    volumes:
+      - vl_data:/storage
+    command:
+      - "-storageDataPath=/storage"
+      - "-retentionPeriod=30d"
+      - "-httpListenAddr=:9428"
     networks:
       - ispro-network
 
@@ -90,3 +108,4 @@ volumes:
   postgres_data:
   vmdata:
   grafana_data:
+  vl_data:
