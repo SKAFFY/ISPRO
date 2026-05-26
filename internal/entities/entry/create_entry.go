@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/mkheyfets/ispro-app/internal/entities/entry/domain"
+	"github.com/mkheyfets/ispro-app/internal/metrics"
 	"github.com/muonsoft/validation"
 )
 
@@ -34,5 +35,11 @@ func (uc *CreateEntryUseCase) Handle(ctx context.Context, cmd CreateEntryCommand
 		return nil, err
 	}
 
-	return uc.repo.Create(ctx, cmd.Title, cmd.Content)
+	result, err := uc.repo.Create(ctx, cmd.Title, cmd.Content)
+	if err != nil {
+		return nil, err
+	}
+
+	metrics.EntriesCreatedTotal.Inc()
+	return result, nil
 }

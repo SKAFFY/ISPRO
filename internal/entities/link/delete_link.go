@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/mkheyfets/ispro-app/internal/entities/link/domain"
+	"github.com/mkheyfets/ispro-app/internal/metrics"
 )
 
 var ErrLinkNotFound = errors.New("link not found")
@@ -30,5 +31,9 @@ func (uc *DeleteLinkUseCase) Handle(ctx context.Context, cmd DeleteLinkCommand) 
 		return ErrLinkNotFound
 	}
 
-	return uc.repo.Delete(ctx, cmd.ID)
+	err = uc.repo.Delete(ctx, cmd.ID)
+	if err == nil {
+		metrics.LinksDeletedTotal.Inc()
+	}
+	return err
 }

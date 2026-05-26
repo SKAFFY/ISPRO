@@ -154,3 +154,85 @@ internal/
   ├── entities/        # Бизнес-логика
   └── di/              # Dependency Injection
 ```
+
+---
+
+## Lab3: Метрики
+
+### Описание
+
+Добавление метрик в сервис с использованием Prometheus client и визуализация в Grafana.
+
+### Технологии
+
+- Go + prometheus/client_golang
+- VictoriaMetrics (Time Series DB)
+- Grafana (визуализация)
+
+### Метрики
+
+#### Стандартные метрики
+
+| Метрика | Тип | Описание |
+|---------|-----|----------|
+| `http_requests_total` | Counter | Всего HTTP запросов |
+| `http_request_duration_seconds` | Histogram | Время выполнения запроса |
+
+#### Продуктовые метрики
+
+| Метрика | Тип | Описание |
+|---------|-----|----------|
+| `entries_created_total` | Counter | Всего создано записей |
+| `entries_deleted_total` | Counter | Всего удалено записей |
+| `links_created_total` | Counter | Всего создано связей |
+| `links_deleted_total` | Counter | Всего удалено связей |
+
+### Запуск
+
+```bash
+# Запуск всех сервисов (PostgreSQL, VictoriaMetrics, Grafana, App)
+make docker-up
+
+# Применение миграций
+make migrate-up
+
+# Сборка и запуск приложения
+make start
+```
+
+### Доступ к сервисам
+
+- **Приложение**: http://localhost:8080
+- **Метрики**: http://localhost:8080/metrics
+- **Grafana**: http://localhost:3000 (admin/admin)
+- **VictoriaMetrics**: http://localhost:8428
+
+### Примеры PromQL запросов
+
+```promql
+# RPS (запросов в секунду)
+sum(rate(http_requests_total[5m])) by (method, path)
+
+# p95 latency
+histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (method, path, le))
+
+# p99 latency
+histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (method, path, le))
+
+# Всего создано записей
+entries_created_total
+
+# Скорость создания записей (в секунду)
+rate(entries_created_total[5m])
+
+# Сколько сейчас активных горутин
+go_goroutines
+```
+
+### Дашборд
+
+В Grafana автоматически подключается дашборд `ISPRO App Metrics` с панелями:
+- HTTP Requests Rate (RPS)
+- HTTP Latency (p95, p99)
+- Product Metrics (stat панели)
+- Product Metrics (time series)

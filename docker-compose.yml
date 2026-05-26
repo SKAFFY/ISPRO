@@ -17,6 +17,76 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - ispro-network
+
+  app:
+    build: .
+    container_name: ispro-app
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - DSN=postgres://ispro:ispro@postgres:5432/ispro?sslmode=disable
+    networks:
+      - ispro-network
+
+  victoriametrics:
+    image: victoriametrics/victoria-metrics:latest
+    container_name: victoriametrics
+    restart: unless-stopped
+    ports:
+      - "8428:8428"
+    volumes:
+      - vmdata:/storage
+    command:
+      - "-storageDataPath=/storage"
+      - "-retentionPeriod=30d"
+      - "-httpListenAddr=:8428"
+    networks:
+      - ispro-network
+
+  vmagent:
+    image: victoriametrics/vmagent:latest
+    container_name: vmagent
+    restart: unless-stopped
+    ports:
+      - "8429:8429"
+    volumes:
+      - ./vmconfig:/etc/vmagent:ro
+    command:
+      - "-promscrape.config=/etc/vmagent/config.yml"
+      - "-remoteWrite.url=http://victoriametrics:8428/api/v1/write"
+      - "-httpListenAddr=:8429"
+    depends_on:
+      - victoriametrics
+    networks:
+      - ispro-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - victoriametrics
+    networks:
+      - ispro-network
+
+networks:
+  ispro-network:
+    driver: bridge
 
 volumes:
   postgres_data:
+  vmdata:
+  grafana_data:
