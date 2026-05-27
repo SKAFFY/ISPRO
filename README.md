@@ -13,6 +13,21 @@
 
 ---
 
+## Общие команды
+
+| Команда | Описание |
+|---------|----------|
+| `make docker-up` | Запуск PostgreSQL, VictoriaMetrics, Grafana |
+| `make docker-down` | Остановка всех Docker сервисов |
+| `make migrate-up` | Применение миграций |
+| `make migrate-down` | Откат миграций |
+| `make start` | Сборка и запуск сервера |
+| `make generate-api` | Генерация REST API из OpenAPI |
+| `make di-generate` | Генерация DI контейнера |
+| `make swagger` | Swagger UI на http://localhost:8081 |
+
+---
+
 ## Lab1: Регулярные выражения
 
 ### Описание
@@ -44,19 +59,19 @@
 ### Запуск
 
 ```bash
-make run
+make run-regexp
 ```
 
 ### Тесты
 
 ```bash
-make test
+go test ./...
 ```
 
 ### Бенчмарки
 
 ```bash
-make bench
+go test -bench=. ./...
 ```
 
 ---
@@ -73,19 +88,6 @@ REST API сервис для mindmap-приложения с использов�
 - OpenAPI 2.0 (Swagger)
 - go-openapi (генерация кода)
 - PostgreSQL
-
-### Запуск
-
-```bash
-# Запуск БД
-make docker-up
-
-# Применение миграций
-make migrate-up
-
-# Запуск сервера
-make run
-```
 
 ### API Endpoints
 
@@ -135,14 +137,6 @@ curl -X POST http://localhost:8080/links \
 # {"id":1,"source_id":1,"target_id":2}
 ```
 
-### Генерация кода из OpenAPI
-
-```bash
-make generate
-```
-
-Код генерируется с помощью `swagger generate server` по спецификации `api/openapi.yaml`.
-
 ### Структура проекта
 
 ```
@@ -154,3 +148,72 @@ internal/
   ├── entities/        # Бизнес-логика
   └── di/              # Dependency Injection
 ```
+
+---
+
+## Lab3: Метрики
+
+### Описание
+
+Добавление метрик в сервис с использованием Prometheus client и визуализация в Grafana.
+
+### Технологии
+
+- Go + prometheus/client_golang
+- VictoriaMetrics (Time Series DB)
+- Grafana (визуализация)
+
+### Метрики
+
+#### Стандартные метрики
+
+| Метрика | Тип | Описание |
+|---------|-----|----------|
+| `http_requests_total` | Counter | Всего HTTP запросов |
+| `http_request_duration_seconds` | Histogram | Время выполнения запроса |
+
+#### Продуктовые метрики
+
+| Метрика | Тип | Описание |
+|---------|-----|----------|
+| `entries_created_total` | Counter | Всего создано записей |
+| `entries_deleted_total` | Counter | Всего удалено записей |
+| `links_created_total` | Counter | Всего создано связей |
+| `links_deleted_total` | Counter | Всего удалено связей |
+
+### Доступ к сервисам
+
+- **Приложение**: http://localhost:8080
+- **Метрики**: http://localhost:8080/metrics
+- **Grafana**: http://localhost:3000 (admin/admin)
+- **VictoriaMetrics**: http://localhost:8428
+
+### Примеры PromQL запросов
+
+```promql
+# RPS (запросов в секунду)
+sum(rate(http_requests_total[5m])) by (method, path)
+
+# p95 latency
+histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (method, path, le))
+
+# p99 latency
+histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (method, path, le))
+
+# Всего создано записей
+entries_created_total
+
+# Скорость создания записей (в секунду)
+rate(entries_created_total[5m])
+
+# Сколько сейчас активных горутин
+go_goroutines
+```
+
+### Дашборд
+
+В Grafana автоматически подключается дашборд `ISPRO App Metrics` с панелями:
+- HTTP Requests Rate (RPS)
+- HTTP Latency (p95, p99)
+- Product Metrics (stat панели)
+- Product Metrics (time series)

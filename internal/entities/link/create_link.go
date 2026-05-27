@@ -6,6 +6,7 @@ import (
 	entryDomain "github.com/mkheyfets/ispro-app/internal/entities/entry/domain"
 	"github.com/mkheyfets/ispro-app/internal/entities/link/domain"
 	linkValidation "github.com/mkheyfets/ispro-app/internal/entities/link/domain/validation"
+	"github.com/mkheyfets/ispro-app/internal/metrics"
 	"github.com/muonsoft/validation"
 )
 
@@ -51,5 +52,9 @@ func (uc *CreateLinkUseCase) Handle(ctx context.Context, cmd CreateLinkCommand) 
 		return nil, err
 	}
 
-	return uc.repo.Create(ctx, cmd.SourceID, cmd.TargetID)
+	result, err := uc.repo.Create(ctx, cmd.SourceID, cmd.TargetID)
+	if err == nil {
+		metrics.LinksCreatedTotal.Inc()
+	}
+	return result, err
 }

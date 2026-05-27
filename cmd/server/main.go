@@ -14,8 +14,13 @@ import (
 func main() {
 	ctx := context.Background()
 
+	dsn := os.Getenv("DSN")
+	if dsn == "" {
+		dsn = "postgres://ispro:ispro@localhost:5432/ispro?sslmode=disable"
+	}
+
 	container, err := di.NewContainer(
-		di.SetDSN("postgres://ispro:ispro@localhost:5432/ispro?sslmode=disable"),
+		di.SetDSN(dsn),
 	)
 	if err != nil {
 		log.Fatalf("failed to create container: %v", err)

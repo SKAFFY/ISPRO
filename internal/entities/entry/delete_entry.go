@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/mkheyfets/ispro-app/internal/entities/entry/domain"
+	"github.com/mkheyfets/ispro-app/internal/metrics"
 )
 
 type DeleteEntryUseCase struct {
@@ -19,5 +20,9 @@ type DeleteEntryCommand struct {
 }
 
 func (uc *DeleteEntryUseCase) Handle(ctx context.Context, cmd DeleteEntryCommand) error {
-	return uc.repo.Delete(ctx, cmd.ID)
+	err := uc.repo.Delete(ctx, cmd.ID)
+	if err == nil {
+		metrics.EntriesDeletedTotal.Inc()
+	}
+	return err
 }
