@@ -217,3 +217,63 @@ go_goroutines
 - HTTP Latency (p95, p99)
 - Product Metrics (stat панели)
 - Product Metrics (time series)
+
+---
+
+## Lab4: Журналирование
+
+### Описание
+
+Добавление структурированного журналирования (логов) в сервис с использованием встроенного пакета `log/slog` (Go 1.21+) и сбор логов в Loki с визуализацией в Grafana.
+
+### Технологии
+
+- Go + `log/slog` (структурированное логирование в JSON)
+- Loki (хранение логов)
+- Grafana (визуализация)
+
+### Доступ к сервисам
+
+- **Loki**: http://localhost:3100
+- **Grafana Logs Dashboard**: http://localhost:3000 (admin/admin)
+
+### Примеры LogQL запросов
+
+```logql
+# Все логи приложения
+{service="ispro-app"}
+
+# Только ошибки
+{service="ispro-app"} |= `"level":"error"`
+
+# Только предупреждения
+{service="ispro-app"} |= `"level":"warn"`
+
+# Поиск по конкретному ID записи
+{service="ispro-app"} |= `"id":1`
+
+# Поиск по title
+{service="ispro-app"} |= "Title"
+
+# Подсчёт логов по уровням
+sum by (level) (count_over_time({service="ispro-app"}[5m]))
+```
+
+### Структура логов
+
+Каждое сообщение — JSON строка с полями:
+
+| Поле | Описание |
+|------|----------|
+| `time` | Время события (RFC3339Nano) |
+| `level` | Уровень логирования (info, warn, error) |
+| `service` | Имя сервиса (ispro-app) |
+| `msg` | Текстовое сообщение |
+| `id` | ID сущности (если применимо) |
+| `title` | Заголовок записи (если применимо) |
+| `error` | Детали ошибки (если есть) |
+
+### Дашборд
+
+В Grafana автоматически подключается дашборд `ISPRO App Logs` с панелью:
+- Application Logs — все логи приложения с возможностью фильтрации по уровню, поиску по тексту и времени

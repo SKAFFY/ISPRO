@@ -2,6 +2,7 @@ package link
 
 import (
 	"context"
+	"log/slog"
 
 	entryDomain "github.com/mkheyfets/ispro-app/internal/entities/entry/domain"
 	"github.com/mkheyfets/ispro-app/internal/entities/link/domain"
@@ -36,10 +37,12 @@ func (uc *CreateLinkUseCase) Handle(ctx context.Context, cmd CreateLinkCommand) 
 	}
 
 	if err := link.Validate(ctx, uc.validator); err != nil {
+		slog.Warn("link validation failed", "source_id", cmd.SourceID, "target_id", cmd.TargetID)
 		return nil, err
 	}
 
 	if cmd.SourceID == cmd.TargetID {
+		slog.Warn("link source equals target", "source_id", cmd.SourceID)
 		return nil, validation.ErrIsEqual
 	}
 
@@ -49,12 +52,17 @@ func (uc *CreateLinkUseCase) Handle(ctx context.Context, cmd CreateLinkCommand) 
 		validation.NumberProperty[int64]("source_id", link.SourceID, entryExistsConstraint),
 		validation.NumberProperty[int64]("target_id", link.TargetID, entryExistsConstraint),
 	); err != nil {
+		slog.Warn("entry existence check failed", "source_id", cmd.SourceID, "target_id", cmd.TargetID)
 		return nil, err
 	}
 
 	result, err := uc.repo.Create(ctx, cmd.SourceID, cmd.TargetID)
-	if err == nil {
-		metrics.LinksCreatedTotal.Inc()
+	if err != nil {
+		slog.Error("failed to create link in repository", "error", err, "source_id", cmd.SourceID, "target_id", cmd.TargetID)
+		return nil, err
 	}
-	return result, err
+
+	metrics.LinksCreatedTotal.Inc()
+	slog.Info("link created", "id", result.ID, "source_id", result.SourceID, "target_id", result.TargetID)
+	return result, nil
 }
