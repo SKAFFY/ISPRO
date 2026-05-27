@@ -218,6 +218,8 @@ go_goroutines
 - Product Metrics (stat панели)
 - Product Metrics (time series)
 
+![grafana_dash](https://raw.githubusercontent.com/SKAFFY/ISPRO/refs/heads/lab6/readme-assets/grafana_dashboard.png)
+
 ---
 
 ## Lab4: Журналирование
@@ -278,6 +280,8 @@ sum by (level) (count_over_time({service="ispro-app"}[5m]))
 В Grafana автоматически подключается дашборд `ISPRO App Logs` с панелью:
 - Application Logs — все логи приложения с возможностью фильтрации по уровню, поиску по тексту и времени
 
+![logs](https://raw.githubusercontent.com/SKAFFY/ISPRO/refs/heads/lab6/readme-assets/grafana_logs.png)
+
 ---
 
 ## Lab5: Распределенная трассировка
@@ -325,6 +329,8 @@ sum by (level) (count_over_time({service="ispro-app"}[5m]))
 
 В Grafana через datasource `Jaeger` можно просматривать трассировки из Explore.
 
+![traces](https://raw.githubusercontent.com/SKAFFY/ISPRO/refs/heads/lab6/readme-assets/traces.png)
+
 ---
 
 ## Lab6: CI/CD
@@ -352,6 +358,8 @@ sum by (level) (count_over_time({service="ispro-app"}[5m]))
 ### Триггер
 
 Workflow запускается автоматически при пуше в ветку `lab6`.
+
+![ci](https://raw.githubusercontent.com/SKAFFY/ISPRO/refs/heads/lab6/readme-assets/remote_ci.png)
 
 ### Docker образ
 
