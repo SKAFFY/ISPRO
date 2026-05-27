@@ -1,0 +1,245 @@
+swagger: "2.0"
+info:
+  title: ISPRO Mindmap API
+  description: Mindmap application with entries and links
+  version: 1.0.0
+basePath: /
+schemes:
+  - http
+produces:
+  - application/json
+consumes:
+  - application/json
+
+paths:
+  /entries:
+    get:
+      summary: List all entries
+      operationId: listEntries
+      tags:
+        - entries
+      responses:
+        200:
+          description: List of entries
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Entry'
+    post:
+      summary: Create a new entry
+      operationId: createEntry
+      tags:
+        - entries
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/EntryInput'
+      responses:
+        201:
+          description: Entry created
+          schema:
+            $ref: '#/definitions/Entry'
+
+  /entries/{id}:
+    get:
+      summary: Get entry by ID
+      operationId: getEntry
+      tags:
+        - entries
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: Entry found
+          schema:
+            $ref: '#/definitions/Entry'
+        404:
+          description: Entry not found
+    put:
+      summary: Update entry
+      operationId: updateEntry
+      tags:
+        - entries
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: integer
+          format: int64
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/EntryInput'
+      responses:
+        200:
+          description: Entry updated
+          schema:
+            $ref: '#/definitions/Entry'
+        404:
+          description: Entry not found
+    delete:
+      summary: Delete entry
+      operationId: deleteEntry
+      tags:
+        - entries
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: integer
+          format: int64
+      responses:
+        204:
+          description: Entry deleted
+        404:
+          description: Entry not found
+
+  /links:
+    get:
+      summary: List all links
+      operationId: listLinks
+      tags:
+        - links
+      responses:
+        200:
+          description: List of links
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Link'
+    post:
+      summary: Create a new link
+      operationId: createLink
+      tags:
+        - links
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/LinkInput'
+      responses:
+        201:
+          description: Link created
+          schema:
+            $ref: '#/definitions/Link'
+
+  /links/{id}:
+    get:
+      summary: Get link by ID
+      operationId: getLink
+      tags:
+        - links
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: Link found
+          schema:
+            $ref: '#/definitions/Link'
+        404:
+          description: Link not found
+    put:
+      summary: Update link
+      operationId: updateLink
+      tags:
+        - links
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: integer
+          format: int64
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/LinkInput'
+      responses:
+        200:
+          description: Link updated
+          schema:
+            $ref: '#/definitions/Link'
+        404:
+          description: Link not found
+    delete:
+      summary: Delete link
+      operationId: deleteLink
+      tags:
+        - links
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: integer
+          format: int64
+      responses:
+        204:
+          description: Link deleted
+        404:
+          description: Link not found
+
+definitions:
+  Entry:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+      title:
+        type: string
+      content:
+        type: string
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+
+  EntryInput:
+    type: object
+    required:
+      - title
+    properties:
+      title:
+        type: string
+      content:
+        type: string
+
+  Link:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+      source_id:
+        type: integer
+        format: int64
+      target_id:
+        type: integer
+        format: int64
+
+  LinkInput:
+    type: object
+    required:
+      - source_id
+      - target_id
+    properties:
+      source_id:
+        type: integer
+        format: int64
+      target_id:
+        type: integer
+        format: int64
