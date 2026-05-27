@@ -1,22 +1,47 @@
-.PHONY: run test bench clean
+.PHONY: start test bench clean build-server build-regexp lint coverage migrate-up migrate-down docker-up docker-down docker-build generate-api di-generate swagger
 
-run:
-	go run ./cmd/regexp
+BINARY_NAME=ispro-app
+POSTGRES_DSN=postgres://ispro:ispro@localhost:5432/ispro?sslmode=disable
 
-test:
-	go test -v -race -coverprofile=coverage.out -covermode=atomic ./cmd/regexp/...
+start: build-server
+	./bin/$(BINARY_NAME)
 
-bench:
-	go test -bench=. -benchmem ./cmd/regexp/...
+build-server:
+	go build -o bin/$(BINARY_NAME) ./cmd/server
 
-lint:
-	golangci-lint run ./...
-
-coverage:
-	go tool cover -html=coverage.out -o coverage.html
-
-clean:
-	rm -f coverage.out coverage.html
-
-build:
+build-regexp:
 	go build -o bin/regexp ./cmd/regexp
+
+run-regexp: build-regexp
+	./bin/regexp
+
+migrate-up:
+	goose -dir=internal/migrations postgres $(POSTGRES_DSN) up
+
+migrate-down:
+	goose -dir=internal/migrations postgres $(POSTGRES_DSN) down
+
+docker-up:
+	docker-compose up -d
+
+docker-down:
+	docker-compose down
+
+docker-build:
+	docker build -t $(BINARY_NAME) .
+
+generate-api:
+	rm -rf cmd/ispro-app-server
+	mkdir -p cmd/ispro-app-server
+	cd cmd && swagger generate server -A ispro-app -f ../api/openapi.yaml --principal string --target ispro-app-server
+	rm -rf cmd/ispro-app-server/cmd
+	rm -rf cmd/ispro-app-server/internal
+	cp -r cmd/ispro-app-server/models/* internal/models/ 2>/dev/null || true
+	cp -r cmd/ispro-app-server/restapi/* internal/restapi/ 2>/dev/null || true
+	rm -rf cmd/ispro-app-server
+
+di-generate:
+	digen generate
+
+swagger:
+	swagger serve api/openapi.yaml -p 8081
